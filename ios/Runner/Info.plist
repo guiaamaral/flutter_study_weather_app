@@ -43,5 +43,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Precisamos de acesso a sua localização para mostrar o clima.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Precisamos de acesso a sua localização para mostrar o clima.</string>
 </dict>
 </plist>
