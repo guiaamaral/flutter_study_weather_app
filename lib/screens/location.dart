@@ -10,22 +10,61 @@ class LocationPage extends StatefulWidget {
 }
 
 class _LocationState extends State<LocationPage> {
+  bool showForm = false;
   Location location = Location();
   late LocationData _currentPosition;
+  late TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
+    _controller = TextEditingController();
     getLoc();
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    if (showForm) {
+      return Scaffold(
         appBar: AppBar(
           title: const Text('Clima'),
         ),
-        body: const Center(child: Text('Aguarde, obtendo localização.')));
+        body: Center(
+          child: TextField(
+            decoration: const InputDecoration(
+              icon: Icon(Icons.pin_drop_rounded),
+              labelText: 'Buscar uma cidade',
+              hintText: 'Cidade, estado, país',
+              border: OutlineInputBorder(),
+            ),
+            controller: _controller,
+            onSubmitted: (String value) {
+              String city = value.split(',')[0].trim().toLowerCase();
+              String? state =
+                  value.split(',').length > 1 ? value.split(',')[1].trim().toLowerCase() : null;
+              String? country =
+                  value.split(',').length > 2 ? value.split(',')[2].trim().toLowerCase() : null;
+
+              Navigator.pushReplacementNamed(context, "/weather", arguments: {
+                "weatherData": fetchWeatherByCity(city, state, country)
+              });
+            },
+          ),
+        ),
+      );
+    } else {
+      return Scaffold(
+          appBar: AppBar(
+            title: const Text('Clima'),
+          ),
+          body: const Center(child: Text('Aguarde, obtendo localização.')));
+    }
   }
 
   getLoc() async {
@@ -49,14 +88,16 @@ class _LocationState extends State<LocationPage> {
     }
 
     _currentPosition = await location.getLocation();
-
-    Future.delayed(
-        const Duration(milliseconds: 750),
-        () => {
-              Navigator.pushReplacementNamed(context, "/weather", arguments: {
-                "weatherData": fetchWeatherByLatLon(
-                    _currentPosition.latitude, _currentPosition.longitude)
-              })
-            });
+    if (_currentPosition.latitude != null &&
+        _currentPosition.longitude != null) {
+      Navigator.pushReplacementNamed(context, "/weather", arguments: {
+        "weatherData": fetchWeatherByLatLon(
+            _currentPosition.latitude, _currentPosition.longitude)
+      });
+    } else {
+      setState(() {
+        showForm = true;
+      });
+    }
   }
 }
